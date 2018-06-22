@@ -4,7 +4,15 @@
   "description": "Server for friendship app",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "eslint .",
+    "pretest": "npm run lint",
+    "test": "npm run mocha",
+    "mocha": "mocha --recursive",
+    "test:dev": "nodemon --exec npm run mocha",
+    "test:unit": "nodemon --exec npm run mocha -- ./test/unit",
+    "test:e2e": "nodemon --exec npm run mocha -- ./test/e2e",
+    "start": "node server.js",
+    "start:dev": "nodemon server.js"
   },
   "repository": {
     "type": "git",
