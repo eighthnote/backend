@@ -1,0 +1,33 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "Server for friendship app",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eighthnote/backend.git"
+  },
+  "author": "Victor Bofill <victorm.bofill@gmail.com>, Keli Hansen, Katlyn Tucker",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/eighthnote/backend/issues"
+  },
+  "homepage": "https://github.com/eighthnote/backend#readme",
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "chai-http": "^4.0.0",
+    "eslint": "^4.8.0",
+    "mocha": "^4.0.0",
+    "nodemon": "^1.17.5"
+  },
+  "dependencies": {
+    "body-parser": "^1.18.2",
+    "dotenv": "^6.0.0",
+    "express": "^4.16.2",
+    "mongoose": "^4.12.3",
+    "morgan": "^1.9.0"
+  }
+}
