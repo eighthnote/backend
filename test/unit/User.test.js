@@ -3,7 +3,7 @@ const User = require('../../lib/models/User');
 
 describe('User model test', () => {
   it('Valid and good model', () => {
-    const userDon = {
+    const data = {
       firstName:  'Don',
       lastName:  'Jon',
       pictureUrl: 'https://media.wmagazine.com/photos/5853d5909c190ec57ac0a0bf/3:2/w_640/don-jon-on-set-photos-joseph-gordon-levitt-02-e1380212981747.jpg',
@@ -15,11 +15,11 @@ describe('User model test', () => {
       plans: null
     };
 
-    const user = new User(userDon);
+    const user = new User(data);
 
     assert.deepEqual(user.toJSON(), {
       _id: user._id,
-      ...userDon
+      ...data
     });
 
     assert.isUndefined(user.validateSync());
