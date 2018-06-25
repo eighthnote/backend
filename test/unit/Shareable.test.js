@@ -1,5 +1,5 @@
 const { assert } = require('chai');
-const Plan = require('../../lib/models/Plan');
+const Plan = require('../../lib/models/Shareable');
 
 describe('Plan model test', () => {
   it('Valid and good model', () => {
