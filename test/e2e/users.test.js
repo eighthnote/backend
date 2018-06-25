@@ -150,8 +150,18 @@ describe('User API', () => {
   it('Retrieves all details of a single shareable', () => {
     return request.get(`/api/users/${userJon._id}/shareables/${shareableMeet._id}`)
       .then(({ body }) => {
+        shareableMeet.date = body.date;
         assert.ok(body.groupSize);
         assert.equal(body.archived, false);
+      });
+  });
+
+  it('Updates an owned shareable', () => {
+    const oldDate = shareableMeet.date;
+    return request.put(`/api/users/${userJon._id}/shareables/${shareableMeet._id}`)
+      .send({ date: new Date })
+      .then(({ body }) => {
+        assert.notEqual(oldDate, body.date);
       });
   });
 });
