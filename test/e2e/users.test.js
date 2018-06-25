@@ -4,6 +4,7 @@ const { dropCollection } = require('./db');
 
 describe('User API', () => {
   before(() => dropCollection('users'));
+  before(() => dropCollection('shareables'));
 
   let userJon = {
     firstName:  'Jon',
@@ -13,9 +14,7 @@ describe('User API', () => {
     callOrText: null,
     availability: null,
     friends: [],
-    giving: null,
-    requesting: null,
-    plans: null
+    shareables: []
   };
 
   let userDany = {
@@ -26,9 +25,7 @@ describe('User API', () => {
     callOrText: null,
     availability: null,
     friends: [],
-    giving: null,
-    requesting: null,
-    plans: null
+    shareables: []
   };
 
   let userSansa = {
@@ -39,9 +36,20 @@ describe('User API', () => {
     callOrText: null,
     availability: null,
     friends: [],
-    giving: null,
-    requesting: null,
-    plans: null
+    shareables: []
+  };
+
+  let shareableMeet = {
+    name:  'Meet for the first time',
+    priority: [2],
+    groupSize: 2,
+    participants: [],
+    date: new Date,
+    expiration: null,
+    confirmed: true,
+    archived: false,
+    repeats: null,
+    type: 'requesting'
   };
 
   before(() => {
@@ -81,9 +89,7 @@ describe('User API', () => {
         assert.ok(body.pictureUrl);
         assert.ok(body.contact);
         assert.ok(body.friends);
-        assert.equal(body.giving, null);
-        assert.equal(body.requesting, null);
-        assert.equal(body.plans, null);
+        assert.ok(body.shareables);
       });
   });
 
@@ -121,6 +127,14 @@ describe('User API', () => {
         assert.equal(body.firstName, 'Dany');
         assert.ok(body.lastName);
         assert.equal(body.friends, null);
+      });
+  });
+
+  it('Saves a new shareable', () => {
+    return request.post(`/api/users/${userJon._id}/shareables`)
+      .send({shareable: shareableMeet, type: 'requesting'})
+      .then(({ body }) => {
+        assert.equal(body.shareables.length, 1);
       });
   });
 });
