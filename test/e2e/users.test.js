@@ -134,7 +134,24 @@ describe('User API', () => {
     return request.post(`/api/users/${userJon._id}/shareables`)
       .send({shareable: shareableMeet, type: 'requesting'})
       .then(({ body }) => {
+        shareableMeet._id = body.shareables[0];
         assert.equal(body.shareables.length, 1);
+      });
+  });
+
+  it('Gets all personal shareables on a list', () => {
+    return request.get(`/api/users/${userJon._id}/shareables`)
+      .then(({ body }) => {
+        assert.equal(body[0].name, 'Meet for the first time');
+        assert.equal(body[0].confirmed, null);
+      });
+  });
+
+  it('Retrieves all details of a single shareable', () => {
+    return request.get(`/api/users/${userJon._id}/shareables/${shareableMeet._id}`)
+      .then(({ body }) => {
+        assert.ok(body.groupSize);
+        assert.equal(body.archived, false);
       });
   });
 });
