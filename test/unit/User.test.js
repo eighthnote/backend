@@ -8,11 +8,12 @@ describe('User model test', () => {
       lastName:  'Jon',
       pictureUrl: 'https://media.wmagazine.com/photos/5853d5909c190ec57ac0a0bf/3:2/w_640/don-jon-on-set-photos-joseph-gordon-levitt-02-e1380212981747.jpg',
       contact: ['email'],
+      callOrText: null,
       availability: null,
       friends: null,
       giving: null,
       requesting: null,
-      plans: null
+      plans: []
     };
 
     const user = new User(data);
