@@ -99,7 +99,8 @@ describe('User API', () => {
   before(() => {
     return request.post(`/api/users/${userDany._id}/shareables`)
       .send({ shareable: shareableRule })
-      .then(() => {
+      .then(({ body }) => {
+        shareableRule._id = body.shareables[0];
         return request.post(`/api/users/${userSansa._id}/shareables`)
           .send({ shareable: shareableGetHome })
           .then(() => {
@@ -214,6 +215,13 @@ describe('User API', () => {
       .then(({ body }) => {
         assert.equal(body.length, 1);
         assert.equal(body[0].priority, 2);
+      });
+  });
+
+  it('Retrieves a single shareable from the feed', () => {
+    return request.get(`/api/users/${userJon._id}/feed/${shareableRule._id}`)
+      .then(({ body }) => {
+        console.log("BODY: ", body);
       });
   });
 });
