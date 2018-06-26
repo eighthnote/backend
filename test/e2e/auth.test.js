@@ -2,7 +2,7 @@ const { assert } = require('chai');
 const request = require('./request');
 const { dropCollection } = require('./db');
 
-describe('Auth API', () => {
+describe.only('Auth API', () => {
   before(() => dropCollection('accounts'));
   before(() => dropCollection('users'));
 
@@ -18,7 +18,7 @@ describe('Auth API', () => {
 
   it('Signs someone up as a new account', () => {
     return request.post('/api/signup')
-      .send({ lastName: 'lastname', firstName: 'name', email: 'email', password: '1234'})
+      .send({ lastName: 'Snow', firstName: 'Jon', email: 'jon@thewall.com', password: 'honor'})
       .then(({ body }) => {
         token = body.token;
         assert.exists(body.token);
@@ -27,7 +27,7 @@ describe('Auth API', () => {
 
   it('Cannot sign up with email if already used', () => {
     return request.post('/api/signup')
-      .send({lastName: 'blah', firstName: 'blah', email: 'email', password: '4321'})
+      .send({lastName: 'blah', firstName: 'blah', email: 'jon@thewall.com', password: '4321'})
       .then(({ body }) => {
         assert.equal(body.error, 'Email already in use.');
       });
@@ -43,9 +43,11 @@ describe('Auth API', () => {
 
   it('Sign in works', () => {
     return request.post('/api/signin')
-      .send({email: 'email', password: '1234'})
+      .send({email: 'jon@thewall.com', password: 'honor'})
       .then(({ body }) => {
         assert.exists(body.token);
+        assert.exists(body.id.id);
+        assert.exists(body.name);
       });
   });
 });
