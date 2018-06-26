@@ -221,7 +221,8 @@ describe('User API', () => {
   it('Retrieves a single shareable from the feed', () => {
     return request.get(`/api/users/${userJon._id}/feed/${shareableRule._id}`)
       .then(({ body }) => {
-        console.log("BODY: ", body);
+        assert.ok(body.name);
+        assert.notExists(body.repeats);
       });
   });
 });
