@@ -141,6 +141,7 @@ describe.only('User API', () => {
   it('Adds a friend request', () => {
     return request.put('/api/profile/friends/')
       .set('Authorization', token)
+      .set('userId', jonId)
       .send({id: jonId, email: 'dany@dragons.com'})
       .then(({ body }) => {
         assert.equal(body.pendingFriends.length, 1);
@@ -159,29 +160,26 @@ describe.only('User API', () => {
       });
   });
 
-  // it('Populates a friend list', () => {
-  //   return request.put(`/api/users/${userJon._id}/friends/${userSansa._id}`)
-  //     .send({id: userJon._id})
-  //     .then(() => {
-  //       return request.put(`/api/users/${userSansa._id}/friends/${userJon._id}/confirm`)
-  //         .send({id: userSansa._id})
-  //         .then(() => {
-  //           return request.get(`/api/users/${userJon._id}/friends`)
-  //             .then(({ body }) => {
-  //               assert.equal(body.length, 2);
-  //             });
-  //         });
-  //     });
-  // });
+  it('Populates a friend list', () => {
+    return request.get('/api/profile/friends')
+      .set('Authorization', token)
+      .set('userId', jonId)
+      .then(({ body }) => {
+        assert.equal(body.length, 1);
+      });
+  });
 
-  // it('Retrieves a single friend with details', () => {
-  //   return request.get(`/api/users/${userJon._id}/friends/${userDany._id}`)
-  //     .then(({ body }) => {
-  //       assert.equal(body.firstName, 'Dany');
-  //       assert.ok(body.lastName);
-  //       assert.equal(body.friends, null);
-  //     });
-  // });
+  it('Retrieves a single friend with details', () => {
+    return request.get(`/api/profile/friends/${userDany._id}`)
+      .set('Authorization', token)
+      .set('userId', jonId)
+      .then(({ body }) => {
+        console.log('body: ', body);
+        // assert.equal(body.firstName, 'Dany');
+        // assert.ok(body.lastName);
+        // assert.equal(body.friends, null);
+      });
+  });
 
   // it('Saves a new shareable', () => {
   //   return request.post(`/api/users/${userJon._id}/shareables`)
