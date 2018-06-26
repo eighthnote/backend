@@ -100,7 +100,7 @@ describe('User API', () => {
     return request.post(`/api/users/${userDany._id}/shareables`)
       .send({ shareable: shareableRule })
       .then(({ body }) => {
-        shareableRule._id = body.shareables[0];
+        shareableRule._id = body._id;
         return request.post(`/api/users/${userSansa._id}/shareables`)
           .send({ shareable: shareableGetHome })
           .then(() => {
@@ -179,8 +179,8 @@ describe('User API', () => {
     return request.post(`/api/users/${userJon._id}/shareables`)
       .send({shareable: shareableMeet})
       .then(({ body }) => {
-        shareableMeet._id = body.shareables[0];
-        assert.equal(body.shareables.length, 1);
+        shareableMeet._id = body._id;
+        assert.equal(body.type, 'requesting');
       });
   });
 
