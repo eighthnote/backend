@@ -1,11 +1,11 @@
 const { assert } = require('chai');
 const Plan = require('../../lib/models/Shareable');
 
-describe('Plan model test', () => {
+describe('Shareable model test', () => {
   it('Valid and good model', () => {
     const data = {
       name:  'Get coffee',
-      priority: [0],
+      priority: 0,
       groupSize: 3,
       confirmed: false,
       participants: [],

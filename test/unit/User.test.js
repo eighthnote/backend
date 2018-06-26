@@ -11,9 +11,8 @@ describe('User model test', () => {
       callOrText: null,
       availability: null,
       friends: null,
-      giving: null,
-      requesting: null,
-      plans: []
+      pendingFriends: null,
+      shareables: []
     };
 
     const user = new User(data);
