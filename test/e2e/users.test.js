@@ -212,7 +212,8 @@ describe('User API', () => {
   it('Retrieves all feed shareables', () => {
     return request.get(`/api/users/${userJon._id}/feed`)
       .then(({ body }) => {
-        console.log("BODY: ", body);
+        assert.equal(body.length, 1);
+        assert.equal(body[0].priority, 2);
       });
   });
 });
