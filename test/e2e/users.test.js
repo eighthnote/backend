@@ -41,7 +41,7 @@ describe('User API', () => {
 
   let shareableMeet = {
     name:  'Meet for the first time',
-    priority: [2],
+    priority: 2,
     groupSize: 2,
     participants: [],
     date: new Date,
@@ -50,6 +50,37 @@ describe('User API', () => {
     archived: false,
     repeats: null,
     type: 'requesting'
+  };
+
+  let shareableRule = {
+    name:  'Take everything over',
+    priority: 2,
+    groupSize: 2,
+    participants: [],
+    date: new Date,
+    expiration: null,
+    confirmed: true,
+    archived: false,
+    repeats: null,
+    type: 'giving'
+  };
+
+  let shareableGetHome = {
+    name:  'Get back to Winterfell',
+    priority: 2,
+    groupSize: 2,
+    participants: [],
+    date: new Date,
+    expiration: null,
+    confirmed: true,
+    archived: false,
+    repeats: null,
+    type: 'plans'
+  };
+
+  let shareableEatASandwich = {
+    name:  'Eat a sandwich',
+    priority: 1
   };
 
   before(() => {
@@ -61,6 +92,19 @@ describe('User API', () => {
           .send(userSansa)
           .then(({ body }) => {
             userSansa._id = body._id;
+          });
+      });
+  });
+
+  before(() => {
+    return request.post(`/api/users/${userDany._id}/shareables`)
+      .send({ shareable: shareableRule })
+      .then(() => {
+        return request.post(`/api/users/${userSansa._id}/shareables`)
+          .send({ shareable: shareableGetHome })
+          .then(() => {
+            return request.post(`/api/users/${userSansa._id}/shareables`)
+              .send({ shareable: shareableEatASandwich });
           });
       });
   });
@@ -132,7 +176,7 @@ describe('User API', () => {
 
   it('Saves a new shareable', () => {
     return request.post(`/api/users/${userJon._id}/shareables`)
-      .send({shareable: shareableMeet, type: 'requesting'})
+      .send({shareable: shareableMeet})
       .then(({ body }) => {
         shareableMeet._id = body.shareables[0];
         assert.equal(body.shareables.length, 1);
@@ -162,6 +206,13 @@ describe('User API', () => {
       .send({ date: new Date })
       .then(({ body }) => {
         assert.notEqual(oldDate, body.date);
+      });
+  });
+
+  it('Retrieves all feed shareables', () => {
+    return request.get(`/api/users/${userJon._id}/feed`)
+      .then(({ body }) => {
+        console.log("BODY: ", body);
       });
   });
 });
