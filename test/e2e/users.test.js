@@ -8,7 +8,8 @@ describe.only('User API', () => {
   before(() => dropCollection('accounts'));
 
   let token = null;
-  let userId = null;
+  let tokenDany = null;
+  let jonId = null;
 
   let userDany = {};
   let userSansa = {};
@@ -31,12 +32,13 @@ describe.only('User API', () => {
       .send({email: 'jon@thewall.com', password: 'honor'})
       .then(({ body }) => {
         token = body.token;
-        userId = body.id.id;
+        jonId = body.id.id;
       }).then(() => {
         return request.post('/api/signin')
           .send({email: 'dany@dragons.com', password: 'dragons' })
           .then(({ body }) => {
             userDany._id = body.id.id;
+            tokenDany = body.token;
           })
           .then(() => {
             return request.post('/api/signin')
@@ -109,7 +111,7 @@ describe.only('User API', () => {
   it('Retrieves a user\'s profile by id', () => {
     return request.get('/api/profile/')
       .set('Authorization', token)
-      .set('userId', userId)
+      .set('userId', jonId)
       .then(({ body }) => {
         assert.equal(body.__v, 0);
         assert.ok(body.firstName);
@@ -122,42 +124,40 @@ describe.only('User API', () => {
       .set('Authorization', token)
       .set('userId', userDany._id)
       .then(({ body }) => {
-        console.log('body: ', body);
-        // assert.equal(body.__v, null);
-        // assert.ok(body.firstName);
-        // assert.ok(body.lastName);
-        // assert.ok(body.pictureUrl);
-        // assert.ok(body.contact);
-        // assert.ok(body.friends);
-        // assert.ok(body.shareables);
+        assert.equal(body.error, 'Unauthorized');
       });
   });
 
-  // it('Updates a profile information', () => {
-  //   return request.put(`/api/users/${userJon._id}`)
-  //     .send({ lastName: 'Targaryen' })
-  //     .then(({ body }) => {
-  //       assert.equal(body.lastName, 'Targaryen');
-  //     });
-  // });
+  it('Updates own profile information', () => {
+    return request.put('/api/profile')
+      .set('Authorization', token)
+      .set('userId', jonId)
+      .send({ lastName: 'Targaryen' })
+      .then(({ body }) => {
+        assert.equal(body.lastName, 'Targaryen');
+      });
+  });
 
-  // it('Adds a friend request', () => {
-  //   return request.put(`/api/users/${userJon._id}/friends/${userDany._id}`)
-  //     .send({id: userJon._id})
-  //     .then(({ body }) => {
-  //       assert.equal(body.pendingFriends.length, 1);
-  //       assert.equal(body.pendingFriends[0], userJon._id);
-  //     });
-  // });
+  it('Adds a friend request', () => {
+    return request.put('/api/profile/friends/')
+      .set('Authorization', token)
+      .send({id: jonId, email: 'dany@dragons.com'})
+      .then(({ body }) => {
+        assert.equal(body.pendingFriends.length, 1);
+        assert.equal(body.pendingFriends[0], jonId);
+      });
+  });
 
-  // it('Confirms a friend request', () => {
-  //   return request.put(`/api/users/${userDany._id}/friends/${userJon._id}/confirm`)
-  //     .send({id: userDany._id})
-  //     .then(({ body }) => {
-  //       assert.equal(body.friends.length, 1);
-  //       assert.equal(body.pendingFriends.length, 0);
-  //     });
-  // });
+  it('Confirms a friend request', () => {
+    return request.put(`/api/profile/friends/${jonId}/confirm`)
+      .set('Authorization', tokenDany)
+      .set('userId', userDany._id)
+      .send({userId: userDany._id})
+      .then(({ body }) => {
+        assert.equal(body.friends.length, 1);
+        assert.equal(body.pendingFriends.length, 0);
+      });
+  });
 
   // it('Populates a friend list', () => {
   //   return request.put(`/api/users/${userJon._id}/friends/${userSansa._id}`)
