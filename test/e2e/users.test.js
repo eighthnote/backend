@@ -2,7 +2,7 @@ const { assert } = require('chai');
 const request = require('./request');
 const { dropCollection } = require('./db');
 
-describe('User API', () => {
+describe.skip('User API', () => {
   before(() => dropCollection('users'));
   before(() => dropCollection('shareables'));
 
