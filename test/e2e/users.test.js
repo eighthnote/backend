@@ -147,83 +147,95 @@ describe('User API', () => {
       });
   });
 
-  // it('Adds a friend by friend id', () => {
-  //   return request.put(`/api/users/${userJon._id}/friends`)
-  //     .send({friendId: userDany._id})
-  //     .then(({ body }) => {
-  //       assert.equal(body.friends.length, 1);
-  //     });
-  // });
+  it('Adds a friend request', () => {
+    return request.put(`/api/users/${userJon._id}/friends/${userDany._id}`)
+      .send({id: userJon._id})
+      .then(({ body }) => {
+        assert.equal(body.pendingFriends.length, 1);
+        assert.equal(body.pendingFriends[0], userJon._id);
+      });
+  });
 
-  // it('Populates a friend list', () => {
-  //   return request.put(`/api/users/${userJon._id}/friends`)
-  //     .send({friendId: userSansa._id})
-  //     .then(() => {
-  //       return request.get(`/api/users/${userJon._id}/friends`)
-  //         .then(({ body }) => {
-  //           assert.equal(body.length, 2);
-  //           assert.equal(body[0].friends, null);
-  //         });
-  //     });
-  // });
+  it('Confirms a friend request', () => {
+    return request.put(`/api/users/${userDany._id}/friends/${userJon._id}/confirm`)
+      .send({id: userDany._id})
+      .then(({ body }) => {
+        assert.equal(body.friends.length, 1);
+        assert.equal(body.pendingFriends.length, 0);
+      });
+  });
 
-  // it('Retrieves a single friend with details', () => {
-  //   return request.get(`/api/users/${userJon._id}/friends/${userDany._id}`)
-  //     .then(({ body }) => {
-  //       assert.equal(body.firstName, 'Dany');
-  //       assert.ok(body.lastName);
-  //       assert.equal(body.friends, null);
-  //     });
-  // });
+  it('Populates a friend list', () => {
+    return request.put(`/api/users/${userJon._id}/friends/${userSansa._id}`)
+      .send({id: userJon._id})
+      .then(() => {
+        return request.put(`/api/users/${userSansa._id}/friends/${userJon._id}/confirm`)
+          .send({id: userSansa._id})
+          .then(() => {
+            return request.get(`/api/users/${userJon._id}/friends`)
+              .then(({ body }) => {
+                assert.equal(body.length, 2);
+              });
+          });
+      });
+  });
 
-  // it('Saves a new shareable', () => {
-  //   return request.post(`/api/users/${userJon._id}/shareables`)
-  //     .send({shareable: shareableMeet})
-  //     .then(({ body }) => {
-  //       shareableMeet._id = body._id;
-  //       assert.equal(body.type, 'requesting');
-  //     });
-  // });
+  it('Retrieves a single friend with details', () => {
+    return request.get(`/api/users/${userJon._id}/friends/${userDany._id}`)
+      .then(({ body }) => {
+        assert.equal(body.firstName, 'Dany');
+        assert.ok(body.lastName);
+        assert.equal(body.friends, null);
+      });
+  });
 
-  // it('Gets all personal shareables on a list', () => {
-  //   return request.get(`/api/users/${userJon._id}/shareables`)
-  //     .then(({ body }) => {
-  //       assert.equal(body[0].name, 'Meet for the first time');
-  //       assert.equal(body[0].confirmed, null);
-  //     });
-  // });
+  it('Saves a new shareable', () => {
+    return request.post(`/api/users/${userJon._id}/shareables`)
+      .send({shareable: shareableMeet})
+      .then(({ body }) => {
+        shareableMeet._id = body._id;
+        assert.equal(body.type, 'requesting');
+      });
+  });
 
-  // it('Retrieves all details of a single shareable', () => {
-  //   return request.get(`/api/users/${userJon._id}/shareables/${shareableMeet._id}`)
-  //     .then(({ body }) => {
-  //       shareableMeet.date = body.date;
-  //       assert.ok(body.groupSize);
-  //       assert.equal(body.archived, false);
-  //     });
-  // });
+  it('Gets all personal shareables on a list', () => {
+    return request.get(`/api/users/${userJon._id}/shareables`)
+      .then(({ body }) => {
+        assert.equal(body[0].name, 'Meet for the first time');
+      });
+  });
 
-  // it('Updates an owned shareable', () => {
-  //   const oldDate = shareableMeet.date;
-  //   return request.put(`/api/users/${userJon._id}/shareables/${shareableMeet._id}`)
-  //     .send({ date: new Date })
-  //     .then(({ body }) => {
-  //       assert.notEqual(oldDate, body.date);
-  //     });
-  // });
+  it('Retrieves all details of a single shareable', () => {
+    return request.get(`/api/users/${userJon._id}/shareables/${shareableMeet._id}`)
+      .then(({ body }) => {
+        shareableMeet.date = body.date;
+        assert.ok(body.groupSize);
+        assert.equal(body.archived, false);
+      });
+  });
 
-  // it('Retrieves all feed shareables', () => {
-  //   return request.get(`/api/users/${userJon._id}/feed`)
-  //     .then(({ body }) => {
-  //       assert.equal(body.length, 1);
-  //       assert.equal(body[0].priority, 2);
-  //     });
-  // });
+  it('Updates an owned shareable', () => {
+    const oldDate = shareableMeet.date;
+    return request.put(`/api/users/${userJon._id}/shareables/${shareableMeet._id}`)
+      .send({ date: new Date })
+      .then(({ body }) => {
+        assert.notEqual(oldDate, body.date);
+      });
+  });
 
-  // it('Retrieves a single shareable from the feed', () => {
-  //   return request.get(`/api/users/${userJon._id}/feed/${shareableRule._id}`)
-  //     .then(({ body }) => {
-  //       assert.ok(body.name);
-  //       assert.notExists(body.repeats);
-  //     });
-  // });
+  it('Retrieves all feed shareables', () => {
+    return request.get(`/api/users/${userJon._id}/feed`)
+      .then(({ body }) => {
+        assert.equal(body.length, 1);
+        assert.equal(body[0].priority, 2);
+      });
+  });
+
+  it('Retrieves a single shareable from the feed', () => {
+    return request.get(`/api/users/${userJon._id}/feed/${shareableRule._id}`)
+      .then(({ body }) => {
+        assert.ok(body.name);
+        assert.notExists(body.repeats);
+      });
+  });
 });
