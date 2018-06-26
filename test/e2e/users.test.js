@@ -238,4 +238,36 @@ describe('User API', () => {
         assert.notExists(body.repeats);
       });
   });
+
+  it('Deletes a shareable', () => {
+    return request.delete(`/api/users/${userJon._id}/shareables/${shareableMeet._id}`)
+      .send({ id: userJon._id })
+      .then(() => {
+        return request.get(`/api/users/${userJon._id}/shareables/${shareableMeet._id}`)
+          .then(({ body }) => {
+            assert.notExists(body);
+          });
+      });
+  });
+
+  it('Deletes a friend', () => {
+    return request.delete(`/api/users/${userJon._id}/friends/${userDany._id}`)
+      .send({ id: userJon._id })
+      .then(() => {
+        return request.get(`/api/users/${userJon._id}`)
+          .then(({ body }) => {
+            assert.equal(body.friends.length, 1);
+          });
+      });
+  });
+
+  it('Deletes a profile', () => {
+    return request.delete(`/api/users/${userJon._id}`)
+      .then(() => {
+        return request.get(`/api/users/${userJon._id}`)
+          .then(({ body }) => {
+            assert.notExists(body);
+          });
+      });
+  });
 });
