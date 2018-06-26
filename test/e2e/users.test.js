@@ -2,23 +2,26 @@ const { assert } = require('chai');
 const request = require('./request');
 const { dropCollection } = require('./db');
 
-describe('User API', () => {
+describe.only('User API', () => {
   before(() => dropCollection('users'));
   before(() => dropCollection('shareables'));
   before(() => dropCollection('accounts'));
 
   let token = null;
+  let userId = null;
+
+  let userDany = {};
+  let userSansa = {};
 
   before(() => {
     return request.post('/api/signup')
       .send({ lastName: 'Snow', firstName: 'Jon', email: 'jon@thewall.com', password: 'honor'})
-      .then(({ body }) => {
-        token = body.token;
+      .then(() => {
         return request.post('/api/signup')
           .send({email: 'dany@dragons.com', firstName: 'Dany', lastName: 'Targaryan', password: 'dragons'})
           .then(() => {
             return request.post('/api/signup')
-              .send({email: 'sansa@winterfell.com', firstName: 'Sansa', lastName: 'Stark', password: 'whyme'})  
+              .send({email: 'sansa@winterfell.com', firstName: 'Sansa', lastName: 'Stark', password: 'whyme'});
           });
       });
   });
@@ -27,8 +30,21 @@ describe('User API', () => {
     return request.post('/api/signin')
       .send({email: 'jon@thewall.com', password: 'honor'})
       .then(({ body }) => {
-        console.log('body: ', body);
         token = body.token;
+        userId = body.id.id;
+      }).then(() => {
+        return request.post('/api/signin')
+          .send({email: 'dany@dragons.com', password: 'dragons' })
+          .then(({ body }) => {
+            userDany._id = body.id.id;
+          })
+          .then(() => {
+            return request.post('/api/signin')
+              .send({email: 'sansa@winterfell.com', password: 'whyme' })
+              .then(({ body }) => {
+                userSansa._id = body.id.id;
+              });
+          });
       });
   });
 
@@ -90,18 +106,31 @@ describe('User API', () => {
   //     });
   // });
 
-  it('Retrieves a user by id', () => {
-    console.log('FORCE PASS!');
-    // return request.get(`/api/users/${userJon._id}`)
-    //   .then(({ body }) => {
-    //     assert.equal(body.__v, null);
-    //     assert.ok(body.firstName);
-    //     assert.ok(body.lastName);
-    //     assert.ok(body.pictureUrl);
-    //     assert.ok(body.contact);
-    //     assert.ok(body.friends);
-    //     assert.ok(body.shareables);
-    //   });
+  it('Retrieves a user\'s profile by id', () => {
+    return request.get('/api/profile/')
+      .set('Authorization', token)
+      .set('userId', userId)
+      .then(({ body }) => {
+        assert.equal(body.__v, 0);
+        assert.ok(body.firstName);
+        assert.ok(body.lastName);
+      });
+  });
+
+  it('Cannot retrieve someone else\'s profile', () => {
+    return request.get('/api/profile/')
+      .set('Authorization', token)
+      .set('userId', userDany._id)
+      .then(({ body }) => {
+        console.log('body: ', body);
+        // assert.equal(body.__v, null);
+        // assert.ok(body.firstName);
+        // assert.ok(body.lastName);
+        // assert.ok(body.pictureUrl);
+        // assert.ok(body.contact);
+        // assert.ok(body.friends);
+        // assert.ok(body.shareables);
+      });
   });
 
   // it('Updates a profile information', () => {
