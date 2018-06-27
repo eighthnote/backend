@@ -169,16 +169,6 @@ describe('User API', () => {
       });
   });
 
-  it('Retrieves a single friend with details', () => {
-    return request.get(`/api/profile/friends/${danyId}`)
-      .set('Authorization', token)
-      .then(({ body }) => {
-        assert.equal(body.firstName, 'Dany');
-        assert.ok(body.lastName);
-        assert.equal(body.friends, null);
-      });
-  });
-
   it('Will not retrieve a profile if not friends', () => {
     return request.get(`/api/profiles/friends/${sansaId}`)
       .set('Authorization', token)
