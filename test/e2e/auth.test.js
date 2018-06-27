@@ -23,6 +23,7 @@ describe('Auth API', () => {
       .then(({ body }) => {
         token = body.token;
         assert.exists(body.token);
+        assert.exists(body.name);
       });
   });
 
