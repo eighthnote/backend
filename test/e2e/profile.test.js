@@ -40,14 +40,14 @@ describe.only('User API', () => {
           .send({email: 'dany@dragons.com', password: 'dragons' })
           .then(({ body }) => {
             tokenDany = body.token;
-            danyId = jwt.decode(token).id;
+            danyId = jwt.decode(tokenDany).id;
           })
           .then(() => {
             return request.post('/api/signin')
               .send({email: 'sansa@winterfell.com', password: 'whyme' })
               .then(({ body }) => {
                 tokenSansa = body.token;
-                sansaId = jwt.decode(token).id;
+                sansaId = jwt.decode(tokenSansa).id;
               });
           });
       });
@@ -170,80 +170,80 @@ describe.only('User API', () => {
       });
   });
 
-  // it('Will not retrieve a profile if not friends', () => {
-  //   return request.get(`/api/profiles/friends/${sansaId}`)
-  //     .set('Authorization', token)
-  //     .then(({ body }) => {
-  //       assert.deepEqual({}, body);
-  //     });
-  // });
+  it('Will not retrieve a profile if not friends', () => {
+    return request.get(`/api/profiles/friends/${sansaId}`)
+      .set('Authorization', token)
+      .then(({ body }) => {
+        assert.deepEqual({}, body);
+      });
+  });
 
-  // it('Saves a new shareable', () => {
-  //   return request.post('/api/profile/shareables')
-  //     .set('Authorization', token)
-  //     .send(shareableMeet)
-  //     .then(({ body }) => {
-  //       shareableMeet._id = body._id;
-  //       assert.equal(body.type, 'requesting');
-  //     });
-  // });
+  it('Saves a new shareable', () => {
+    return request.post('/api/profile/shareables')
+      .set('Authorization', token)
+      .send(shareableMeet)
+      .then(({ body }) => {
+        shareableMeet._id = body._id;
+        assert.equal(body.type, 'requesting');
+      });
+  });
 
-  // it('Gets all personal shareables on a list', () => {
-  //   return request.get('/api/profile/shareables')
-  //     .set('Authorization', token)
-  //     .then(({ body }) => {
-  //       assert.equal(body[0].name, 'Meet for the first time');
-  //     });
-  // });
+  it('Gets all personal shareables on a list', () => {
+    return request.get('/api/profile/shareables')
+      .set('Authorization', token)
+      .then(({ body }) => {
+        assert.equal(body[0].name, 'Meet for the first time');
+      });
+  });
 
-  // it('Updates an owned shareable', () => {
-  //   const oldDate = shareableMeet.date;
-  //   return request.put(`/api/profile/shareables/${shareableMeet._id}`)
-  //     .set('Authorization', token)
-  //     .send({ date: new Date })
-  //     .then(({ body }) => {
-  //       assert.notEqual(oldDate, body.date);
-  //     });
-  // });
+  it('Updates an owned shareable', () => {
+    const oldDate = shareableMeet.date;
+    return request.put(`/api/profile/shareables/${shareableMeet._id}`)
+      .set('Authorization', token)
+      .send({ date: new Date })
+      .then(({ body }) => {
+        assert.notEqual(oldDate, body.date);
+      });
+  });
 
-  // it('Retrieves all feed shareables', () => {
-  //   return request.get('/api/profile/feed')
-  //     .set('Authorization', token)
-  //     .then(({ body }) => {
-  //       assert.equal(body.length, 1);
-  //       assert.equal(body[0].priority, 2);
-  //     });
-  // });
+  it('Retrieves all feed shareables', () => {
+    return request.get('/api/profile/feed')
+      .set('Authorization', token)
+      .then(({ body }) => {
+        assert.equal(body.length, 1);
+        assert.equal(body[0].priority, 2);
+      });
+  });
 
-  // it('Deletes a shareable', () => {
-  //   return request.delete(`/api/profile/shareables/${shareableMeet._id}`)
-  //     .set('Authorization', token)
-  //     .then(({ body }) => {
-  //       assert.equal(body.shareables.length, 0);
-  //     });
-  // });
+  it('Deletes a shareable', () => {
+    return request.delete(`/api/profile/shareables/${shareableMeet._id}`)
+      .set('Authorization', token)
+      .then(({ body }) => {
+        assert.equal(body.shareables.length, 0);
+      });
+  });
 
-  // it('Deletes a friend', () => {
-  //   return request.delete(`/api/profile/friends/${danyId}`)
-  //     .set('Authorization', token)
-  //     .then(() => {
-  //       return request.get('/api/profile')
-  //         .set('Authorization', token)
-  //         .then(({ body }) => {
-  //           assert.equal(body.friends.length, 0);
-  //         });
-  //     });
-  // });
+  it('Deletes a friend', () => {
+    return request.delete(`/api/profile/friends/${danyId}`)
+      .set('Authorization', token)
+      .then(() => {
+        return request.get('/api/profile')
+          .set('Authorization', token)
+          .then(({ body }) => {
+            assert.equal(body.friends.length, 0);
+          });
+      });
+  });
 
-  // it('Deletes a profile', () => {
-  //   return request.delete('/api/profile')
-  //     .set('Authorization', token)
-  //     .then(() => {
-  //       return request.get('/api/profile')
-  //         .set('Authorization', token)
-  //         .then(({ body }) => {
-  //           assert.notExists(body);
-  //         });
-  //     });
-  // });
+  it('Deletes a profile', () => {
+    return request.delete('/api/profile')
+      .set('Authorization', token)
+      .then(() => {
+        return request.get('/api/profile')
+          .set('Authorization', token)
+          .then(({ body }) => {
+            assert.notExists(body);
+          });
+      });
+  });
 });
