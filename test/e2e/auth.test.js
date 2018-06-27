@@ -2,13 +2,12 @@ const { assert } = require('chai');
 const request = require('./request');
 const { dropCollection } = require('./db');
 
-describe('Auth API', () => {
+describe.only('Auth API', () => {
   before(() => dropCollection('accounts'));
   before(() => dropCollection('users'));
   before(() => dropCollection('shareables'));
 
   let token = null;
-  let userId = null;
 
   it('Fails if required information is not provided', () => {
     return request.post('/api/signup')
@@ -39,9 +38,7 @@ describe('Auth API', () => {
     return request.post('/api/signin')
       .send({email: 'jon@thewall.com', password: 'honor'})
       .then(({ body }) => {
-        userId = body.id.id;
         assert.exists(body.token);
-        assert.exists(body.id.id);
         assert.exists(body.name);
       });
   });
@@ -49,7 +46,6 @@ describe('Auth API', () => {
   it('Verifies a token', () => {
     return request.get('/api/verify')
       .set('Authorization', token)
-      .set('userId', userId)
       .then(({ body }) => {
         assert.equal(body.verified, true);
       });
