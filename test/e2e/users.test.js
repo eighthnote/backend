@@ -174,10 +174,18 @@ describe.only('User API', () => {
       .set('Authorization', token)
       .set('userId', jonId)
       .then(({ body }) => {
-        console.log('body: ', body);
-        // assert.equal(body.firstName, 'Dany');
-        // assert.ok(body.lastName);
-        // assert.equal(body.friends, null);
+        assert.equal(body.firstName, 'Dany');
+        assert.ok(body.lastName);
+        assert.equal(body.friends, null);
+      });
+  });
+
+  it('Will not retrieve a profile if not friends', () => {
+    return request.get(`/api/profiles/friends/${userSansa._id}`)
+      .set('Authorization', token)
+      .set('userId', jonId)
+      .then(({ body }) => {
+        assert.deepEqual({}, body);
       });
   });
 
@@ -242,16 +250,19 @@ describe.only('User API', () => {
   //     });
   // });
 
-  // it('Deletes a friend', () => {
-  //   return request.delete(`/api/users/${userJon._id}/friends/${userDany._id}`)
-  //     .send({ id: userJon._id })
-  //     .then(() => {
-  //       return request.get(`/api/users/${userJon._id}`)
-  //         .then(({ body }) => {
-  //           assert.equal(body.friends.length, 1);
-  //         });
-  //     });
-  // });
+  it('Deletes a friend', () => {
+    return request.delete(`/api/profile/friends/${userDany._id}`)
+      .set('Authorization', token)
+      .set('userId', jonId)
+      .then(() => {
+        return request.get('/api/profile')
+          .set('Authorization', token)
+          .set('userId', jonId) 
+          .then(({ body }) => {
+            assert.equal(body.friends.length, 0);
+          });
+      });
+  });
 
   // it('Deletes a profile', () => {
   //   return request.delete(`/api/users/${userJon._id}`)
