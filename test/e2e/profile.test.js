@@ -142,6 +142,15 @@ describe('User API', () => {
       });
   });
 
+  it('Can\'t duplicate a friend request', () => {
+    return request.put('/api/profile/friends/')
+      .set('Authorization', token)
+      .send({email: 'dany@dragons.com'})
+      .then(({ body }) => {
+        assert.equal(body.pendingFriends.length, 1);
+      });
+  });
+
   it('Confirms a friend request', () => {
     return request.put(`/api/profile/friends/confirm/${jonId}`)
       .set('Authorization', tokenDany)
