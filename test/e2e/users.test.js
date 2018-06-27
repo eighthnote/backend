@@ -9,6 +9,7 @@ describe.only('User API', () => {
 
   let token = null;
   let tokenDany = null;
+  let tokenSansa = null;
   let jonId = null;
 
   let userDany = {};
@@ -45,6 +46,7 @@ describe.only('User API', () => {
               .send({email: 'sansa@winterfell.com', password: 'whyme' })
               .then(({ body }) => {
                 userSansa._id = body.id.id;
+                tokenSansa = body.token;
               });
           });
       });
@@ -94,19 +96,25 @@ describe.only('User API', () => {
     priority: 1
   };
 
-  // before(() => {
-  //   return request.post(`/api/users/${userDany._id}/shareables`)
-  //     .send({ shareable: shareableRule })
-  //     .then(({ body }) => {
-  //       shareableRule._id = body._id;
-  //       return request.post(`/api/users/${userSansa._id}/shareables`)
-  //         .send({ shareable: shareableGetHome })
-  //         .then(() => {
-  //           return request.post(`/api/users/${userSansa._id}/shareables`)
-  //             .send({ shareable: shareableEatASandwich });
-  //         });
-  //     });
-  // });
+  before(() => {
+    return request.post('/api/profile/shareables')
+      .set('Authorization', tokenDany)
+      .set('userId', userDany._id)
+      .send(shareableRule)
+      .then(({ body }) => {
+        shareableRule._id = body._id;
+        return request.post('/api/profile/shareables')
+          .set('Authorization', tokenSansa)
+          .set('userId', userSansa._id)
+          .send(shareableGetHome)
+          .then(() => {
+            return request.post('/api/profile/shareables')
+              .set('Authorization', tokenSansa)
+              .set('userId', userSansa._id)
+              .send(shareableEatASandwich);
+          });
+      });
+  });
 
   it('Retrieves a user\'s profile by id', () => {
     return request.get('/api/profile/')
@@ -189,66 +197,55 @@ describe.only('User API', () => {
       });
   });
 
-  // it('Saves a new shareable', () => {
-  //   return request.post(`/api/users/${userJon._id}/shareables`)
-  //     .send({shareable: shareableMeet})
-  //     .then(({ body }) => {
-  //       shareableMeet._id = body._id;
-  //       assert.equal(body.type, 'requesting');
-  //     });
-  // });
+  it('Saves a new shareable', () => {
+    return request.post('/api/profile/shareables')
+      .set('Authorization', token)
+      .set('userId', jonId)
+      .send(shareableMeet)
+      .then(({ body }) => {
+        shareableMeet._id = body._id;
+        assert.equal(body.type, 'requesting');
+      });
+  });
 
-  // it('Gets all personal shareables on a list', () => {
-  //   return request.get(`/api/users/${userJon._id}/shareables`)
-  //     .then(({ body }) => {
-  //       assert.equal(body[0].name, 'Meet for the first time');
-  //     });
-  // });
+  it('Gets all personal shareables on a list', () => {
+    return request.get('/api/profile/shareables')
+      .set('Authorization', token)
+      .set('userId', jonId)
+      .then(({ body }) => {
+        assert.equal(body[0].name, 'Meet for the first time');
+      });
+  });
 
-  // it('Retrieves all details of a single shareable', () => {
-  //   return request.get(`/api/users/${userJon._id}/shareables/${shareableMeet._id}`)
-  //     .then(({ body }) => {
-  //       shareableMeet.date = body.date;
-  //       assert.ok(body.groupSize);
-  //       assert.equal(body.archived, false);
-  //     });
-  // });
+  it('Updates an owned shareable', () => {
+    const oldDate = shareableMeet.date;
+    return request.put(`/api/profile/shareables/${shareableMeet._id}`)
+      .set('Authorization', token)
+      .set('userId', jonId)
+      .send({ date: new Date })
+      .then(({ body }) => {
+        assert.notEqual(oldDate, body.date);
+      });
+  });
 
-  // it('Updates an owned shareable', () => {
-  //   const oldDate = shareableMeet.date;
-  //   return request.put(`/api/users/${userJon._id}/shareables/${shareableMeet._id}`)
-  //     .send({ date: new Date })
-  //     .then(({ body }) => {
-  //       assert.notEqual(oldDate, body.date);
-  //     });
-  // });
+  it('Retrieves all feed shareables', () => {
+    return request.get('/api/profile/feed')
+      .set('Authorization', token)
+      .set('userId', jonId)
+      .then(({ body }) => {
+        assert.equal(body.length, 1);
+        assert.equal(body[0].priority, 2);
+      });
+  });
 
-  // it('Retrieves all feed shareables', () => {
-  //   return request.get(`/api/users/${userJon._id}/feed`)
-  //     .then(({ body }) => {
-  //       assert.equal(body.length, 1);
-  //       assert.equal(body[0].priority, 2);
-  //     });
-  // });
-
-  // it('Retrieves a single shareable from the feed', () => {
-  //   return request.get(`/api/users/${userJon._id}/feed/${shareableRule._id}`)
-  //     .then(({ body }) => {
-  //       assert.ok(body.name);
-  //       assert.notExists(body.repeats);
-  //     });
-  // });
-
-  // it('Deletes a shareable', () => {
-  //   return request.delete(`/api/users/${userJon._id}/shareables/${shareableMeet._id}`)
-  //     .send({ id: userJon._id })
-  //     .then(() => {
-  //       return request.get(`/api/users/${userJon._id}/shareables/${shareableMeet._id}`)
-  //         .then(({ body }) => {
-  //           assert.notExists(body);
-  //         });
-  //     });
-  // });
+  it('Deletes a shareable', () => {
+    return request.delete(`/api/profile/shareables/${shareableMeet._id}`)
+      .set('Authorization', token)
+      .set('userId', jonId)
+      .then(({ body }) => {
+        assert.equal(body.shareables.length, 0);
+      });
+  });
 
   it('Deletes a friend', () => {
     return request.delete(`/api/profile/friends/${userDany._id}`)
@@ -264,13 +261,17 @@ describe.only('User API', () => {
       });
   });
 
-  // it('Deletes a profile', () => {
-  //   return request.delete(`/api/users/${userJon._id}`)
-  //     .then(() => {
-  //       return request.get(`/api/users/${userJon._id}`)
-  //         .then(({ body }) => {
-  //           assert.notExists(body);
-  //         });
-  //     });
-  // });
+  it('Deletes a profile', () => {
+    return request.delete('/api/profile')
+      .set('Authorization', token)
+      .set('userId', jonId)
+      .then(() => {
+        return request.get('/api/profile')
+          .set('Authorization', token)
+          .set('userId', jonId)
+          .then(({ body }) => {
+            assert.notExists(body);
+          });
+      });
+  });
 });
