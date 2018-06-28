@@ -138,7 +138,7 @@ describe.only('User API', () => {
       .set('Authorization', token)
       .send({email: 'dany@dragons.com'})
       .then(({ body }) => {
-        assert.equal(body.pendingFriends[0], jonId);
+        assert.equal(body.pendingFriends[0].toString(), jonId);
       });
   });
 
@@ -163,10 +163,18 @@ describe.only('User API', () => {
   it('Confirms a friend request', () => {
     return request.put(`/api/profile/friends/confirm/${jonId}`)
       .set('Authorization', tokenDany)
-      .send({userId: danyId})
       .then(({ body }) => {
         assert.equal(body.friends.length, 1);
         assert.equal(body.pendingFriends.length, 0);
+      });
+  });
+
+  it('Can\'t add an already friend', () => {
+    return request.put('/api/profile/friends/')
+      .set('Authorization', token)
+      .send({email: 'dany@dragons.com'})
+      .then(({ body }) => {
+        assert.equal(body, 'Cannot add yourself, or someone who is already a friend.');
       });
   });
 
