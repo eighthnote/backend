@@ -151,6 +151,15 @@ describe('User API', () => {
       });
   });
 
+  it('Can\'t send self own friend request', () => {
+    return request.put('/api/profiles/friends/')
+      .set('Authorization', token)
+      .send({email: 'jon@thewall.com'})
+      .then(({ body }) => {
+        assert.notExists(body.pendingFriends);
+      });
+  });
+
   it('Confirms a friend request', () => {
     return request.put(`/api/profile/friends/confirm/${jonId}`)
       .set('Authorization', tokenDany)
