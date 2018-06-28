@@ -187,6 +187,15 @@ describe.only('User API', () => {
       });
   });
 
+  it('Retrieves a single friend\'s profile', () => {
+    return request.get(`/api/profile/friends/${danyId}`)
+      .set('Authorization', token)
+      .then(({ body }) => {
+        assert.equal(body.firstName, 'Dany');
+        assert.equal(typeof {}, typeof body.shareables);
+      });
+  });
+
   it('Will not retrieve a profile if not friends', () => {
     return request.get(`/api/profiles/friends/${sansaId}`)
       .set('Authorization', token)
