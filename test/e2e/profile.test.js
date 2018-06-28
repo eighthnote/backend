@@ -165,7 +165,8 @@ describe('User API', () => {
     return request.get('/api/profile/friends')
       .set('Authorization', token)
       .then(({ body }) => {
-        assert.equal(body.length, 1);
+        assert.equal(body[0].length, 1);
+        assert.equal(body.length, 2);
       });
   });
 
