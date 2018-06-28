@@ -138,7 +138,7 @@ describe.only('User API', () => {
       .set('Authorization', token)
       .send({email: 'dany@dragons.com'})
       .then(({ body }) => {
-        assert.equal(body.pendingFriends.length, 1);
+        assert.equal(body.pendingFriends[0], jonId);
       });
   });
 
@@ -151,12 +151,12 @@ describe.only('User API', () => {
       });
   });
 
-  it('Can\'t send self own friend request', () => {
-    return request.put('/api/profiles/friends/')
+  it('Can\'t send self a friend request', () => {
+    return request.put('/api/profile/friends/')
       .set('Authorization', token)
       .send({email: 'jon@thewall.com'})
       .then(({ body }) => {
-        assert.notExists(body.pendingFriends);
+        assert.equal(body, 'Cannot add yourself, or someone who is already a friend.');
       });
   });
 
