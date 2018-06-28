@@ -3,7 +3,7 @@ const request = require('./request');
 const { dropCollection } = require('./db');
 const jwt = require('jsonwebtoken');
 
-describe('User API', () => {
+describe.only('User API', () => {
   before(() => dropCollection('users'));
   before(() => dropCollection('shareables'));
   before(() => dropCollection('accounts'));
