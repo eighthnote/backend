@@ -138,7 +138,7 @@ describe.only('User API', () => {
       .set('Authorization', token)
       .send({email: 'dany@dragons.com'})
       .then(({ body }) => {
-        assert.equal(body.pendingFriends[0].toString(), jonId);
+        assert.equal(body, 'Friend request sent! If your friend does not receive the request, please check the spelling of their email.');
       });
   });
 
@@ -146,8 +146,12 @@ describe.only('User API', () => {
     return request.put('/api/profile/friends/')
       .set('Authorization', token)
       .send({email: 'dany@dragons.com'})
-      .then(({ body }) => {
-        assert.equal(body.pendingFriends.length, 1);
+      .then(() => {
+        request.get('/api/profile')
+          .set('Authorization', tokenDany)
+          .then(({ body }) => {
+            assert.equal(body.pendingFriends.length, 1);
+          });
       });
   });
 
