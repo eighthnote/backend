@@ -5,8 +5,9 @@ before(() => connect(process.env.MONGODB_URI));
 after(() => mongoose.connection.close());
 
 module.exports = {
-  dropCollection(db) {
-    return mongoose.connection.dropCollection(db)
+  dropCollection(name) {
+    const collection = mongoose.connection.collections[name];
+    return collection.drop()
       .catch(err => {
         if(err.codeName !== 'NamespaceNotFound') throw err;
       });
