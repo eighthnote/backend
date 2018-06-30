@@ -1,4 +1,3 @@
-require('dotenv').config({path: __dirname + '/.env'});
 const connect = require('../../lib/connect');
 const mongoose = require('mongoose');
 
