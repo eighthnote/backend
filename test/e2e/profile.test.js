@@ -146,7 +146,7 @@ describe.only('Profile API', () => {
       .set('Authorization', token)
       .send({email: 'jon@thewall.com'})
       .then(response => {
-        assert.strictEqual(response.status, 403);
+        assert.equal(response.status, 403);
         assert.include(response.body.error,  'yourself');
       });
   });
@@ -165,7 +165,7 @@ describe.only('Profile API', () => {
       .set('Authorization', token)
       .send({email: 'dany@dragons.com'})
       .then(response => {
-        assert.strictEqual(response.status, 403);
+        assert.equal(response.status, 403);
         assert.include(response.body.error,  'already');
       });
   });
@@ -184,15 +184,16 @@ describe.only('Profile API', () => {
       .set('Authorization', token)
       .then(({ body }) => {
         assert.equal(body.firstName, 'Dany');
-        assert.equal(typeof {}, typeof body.shareables);
+        assert.ok(Array.isArray(body.shareables));
       });
   });
 
   it('Will not retrieve a profile if not friends', () => {
-    return request.get(`/api/profiles/friends/${sansaId}`)
+    return request.get(`/api/profile/friends/${sansaId}`)
       .set('Authorization', token)
-      .then(({ body }) => {
-        assert.deepEqual({}, body);
+      .then(response => {
+        assert.equal(response.status, 403);
+        assert.include(response.body.error,  'Not');
       });
   });
 
