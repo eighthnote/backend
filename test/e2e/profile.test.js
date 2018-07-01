@@ -234,11 +234,16 @@ describe.only('Profile API', () => {
       });
   });
 
-  it.skip('Deletes a shareable', () => {
+  it('Deletes a shareable', () => {
     return request.delete(`/api/profile/shareables/${shareableMeet._id}`)
       .set('Authorization', token)
       .then(({ body }) => {
-        assert.equal(body.shareables.length, 0);
+        assert.ok(body.removed);
+        return request.get('/api/profile/shareables')
+          .set('Authorization', token);
+      })
+      .then(({ body }) => {
+        assert.deepEqual(body, []);
       });
   });
 
