@@ -174,8 +174,8 @@ describe.only('Profile API', () => {
     return request.get('/api/profile/friends')
       .set('Authorization', token)
       .then(({ body }) => {
-        assert.equal(body[0].length, 1);
-        assert.equal(body.length, 2);
+        assert.ok(body.friends);
+        assert.ok(body.pendingFriends);
       });
   });
 
