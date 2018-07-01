@@ -238,7 +238,7 @@ describe.only('Profile API', () => {
     return request.delete(`/api/profile/shareables/${shareableMeet._id}`)
       .set('Authorization', token)
       .then(({ body }) => {
-        assert.ok(body.removed);
+        assert.ok(body.deleted);
         return request.get('/api/profile/shareables')
           .set('Authorization', token);
       })
@@ -247,7 +247,7 @@ describe.only('Profile API', () => {
       });
   });
 
-  it.skip('Deletes a friend', () => {
+  it('Deletes a friend', () => {
     return request.delete(`/api/profile/friends/${danyId}`)
       .set('Authorization', token)
       .then(() => {
@@ -259,7 +259,7 @@ describe.only('Profile API', () => {
       });
   });
 
-  it.skip('Deletes a profile', () => {
+  it('Deletes a profile', () => {
     return request.delete('/api/profile')
       .set('Authorization', token)
       .then(() => {
