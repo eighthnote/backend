@@ -145,12 +145,13 @@ describe.only('Profile API', () => {
     return request.put('/api/profile/friends')
       .set('Authorization', token)
       .send({email: 'jon@thewall.com'})
-      .then(({ body }) => {
-        assert.equal(body, 'Cannot add yourself, or someone who is already a friend.');
+      .then(response => {
+        assert.strictEqual(response.status, 403);
+        assert.include(response.body.error,  'yourself');
       });
   });
 
-  it('Confirms a friend request', () => {
+  it('Adds a pending friend', () => {
     return request.put(`/api/profile/friends/confirm/${jonId}`)
       .set('Authorization', tokenDany)
       .then(({ body }) => {
@@ -163,8 +164,9 @@ describe.only('Profile API', () => {
     return request.put('/api/profile/friends')
       .set('Authorization', token)
       .send({email: 'dany@dragons.com'})
-      .then(({ body }) => {
-        assert.equal(body, 'Cannot add yourself, or someone who is already a friend.');
+      .then(response => {
+        assert.strictEqual(response.status, 403);
+        assert.include(response.body.error,  'already');
       });
   });
 
