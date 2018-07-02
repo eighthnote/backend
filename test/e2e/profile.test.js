@@ -124,7 +124,7 @@ describe.only('Profile API', () => {
       .set('Authorization', token)
       .send({email: 'dany@dragons.com'})
       .then(({ body }) => {
-        assert.deepEqual(body, { added: true });
+        assert.deepEqual(body, { requestReceived: true });
       });
   });
 
