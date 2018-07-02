@@ -3,7 +3,7 @@ const request = require('./request');
 const { dropCollection } = require('./db');
 const jwt = require('jsonwebtoken');
 
-describe.only('User API', () => {
+describe.only('Profile API', () => {
   before(() => dropCollection('users'));
   before(() => dropCollection('shareables'));
   before(() => dropCollection('accounts'));
@@ -17,40 +17,26 @@ describe.only('User API', () => {
   let sansaId = null;
 
   before(() => {
-    return request.post('/api/signup')
-      .send({ lastName: 'Snow', firstName: 'Jon', email: 'jon@thewall.com', password: 'honor'})
-      .then(() => {
-        return request.post('/api/signup')
-          .send({email: 'dany@dragons.com', firstName: 'Dany', lastName: 'Targaryan', password: 'dragons'})
-          .then(() => {
-            return request.post('/api/signup')
-              .send({email: 'sansa@winterfell.com', firstName: 'Sansa', lastName: 'Stark', password: 'whyme'});
-          });
-      });
-  });
-
-  before(() => {
-    return request.post('/api/signin')
-      .send({email: 'jon@thewall.com', password: 'honor'})
-      .then(({ body }) => {
-        token = body.token;
-        jonId = jwt.decode(token).id;
-      }).then(() => {
-        return request.post('/api/signin')
-          .send({email: 'dany@dragons.com', password: 'dragons' })
-          .then(({ body }) => {
-            tokenDany = body.token;
-            danyId = jwt.decode(tokenDany).id;
-          })
-          .then(() => {
-            return request.post('/api/signin')
-              .send({email: 'sansa@winterfell.com', password: 'whyme' })
-              .then(({ body }) => {
-                tokenSansa = body.token;
-                sansaId = jwt.decode(tokenSansa).id;
-              });
-          });
-      });
+    return Promise.all([
+      request.post('/api/auth/signup')
+        .send({ lastName: 'Snow', firstName: 'Jon', email: 'jon@thewall.com', password: 'honor'})
+        .then(({ body }) => {
+          token = body.token;
+          jonId = jwt.decode(token).id;
+        }),
+      request.post('/api/auth/signup')
+        .send({email: 'dany@dragons.com', firstName: 'Dany', lastName: 'Targaryan', password: 'dragons'})
+        .then(({ body }) => {
+          tokenDany = body.token;
+          danyId = jwt.decode(tokenDany).id;
+        }),
+      request.post('/api/auth/signup')
+        .send({email: 'sansa@winterfell.com', firstName: 'Sansa', lastName: 'Stark', password: 'whyme'})
+        .then(({ body }) => {
+          tokenSansa = body.token;
+          sansaId = jwt.decode(tokenSansa).id;
+        })
+    ]);
   });
 
   let shareableMeet = {
@@ -98,24 +84,24 @@ describe.only('User API', () => {
   };
 
   before(() => {
-    return request.post('/api/profile/shareables')
-      .set('Authorization', tokenDany)
-      .send(shareableRule)
-      .then(({ body }) => {
-        shareableRule._id = body._id;
-        return request.post('/api/profile/shareables')
-          .set('Authorization', tokenSansa)
-          .send(shareableGetHome)
-          .then(() => {
-            return request.post('/api/profile/shareables')
-              .set('Authorization', tokenSansa)
-              .send(shareableEatASandwich);
-          });
-      });
+    return Promise.all([
+      request.post('/api/profile/shareables')
+        .set('Authorization', tokenDany)
+        .send(shareableRule)
+        .then(({ body }) => {
+          shareableRule._id = body._id;
+        }),
+      request.post('/api/profile/shareables')
+        .set('Authorization', tokenSansa)
+        .send(shareableGetHome),
+      request.post('/api/profile/shareables')
+        .set('Authorization', tokenSansa)
+        .send(shareableEatASandwich)
+    ]);
   });
 
   it('Retrieves a user\'s profile by id', () => {
-    return request.get('/api/profile/')
+    return request.get('/api/profile')
       .set('Authorization', token)
       .then(({ body }) => {
         assert.equal(body.__v, 0);
@@ -134,37 +120,38 @@ describe.only('User API', () => {
   });
 
   it('Adds a friend request', () => {
-    return request.put('/api/profile/friends/')
+    return request.put('/api/profile/friends')
       .set('Authorization', token)
       .send({email: 'dany@dragons.com'})
       .then(({ body }) => {
-        assert.equal(body, 'Friend request sent! If your friend does not receive the request, please check the spelling of their email.');
+        assert.deepEqual(body, { requestReceived: true });
       });
   });
 
   it('Can\'t duplicate a friend request', () => {
-    return request.put('/api/profile/friends/')
+    return request.put('/api/profile/friends')
       .set('Authorization', token)
       .send({email: 'dany@dragons.com'})
       .then(() => {
-        request.get('/api/profile')
-          .set('Authorization', tokenDany)
-          .then(({ body }) => {
-            assert.equal(body.pendingFriends.length, 1);
-          });
+        return request.get('/api/profile')
+          .set('Authorization', tokenDany);
+      })
+      .then(({ body }) => {
+        assert.equal(body.pendingFriends.length, 1);
       });
   });
 
   it('Can\'t send self a friend request', () => {
-    return request.put('/api/profile/friends/')
+    return request.put('/api/profile/friends')
       .set('Authorization', token)
       .send({email: 'jon@thewall.com'})
-      .then(({ body }) => {
-        assert.equal(body, 'Cannot add yourself, or someone who is already a friend.');
+      .then(response => {
+        assert.equal(response.status, 403);
+        assert.include(response.body.error,  'yourself');
       });
   });
 
-  it('Confirms a friend request', () => {
+  it('Adds a pending friend', () => {
     return request.put(`/api/profile/friends/confirm/${jonId}`)
       .set('Authorization', tokenDany)
       .then(({ body }) => {
@@ -174,11 +161,12 @@ describe.only('User API', () => {
   });
 
   it('Can\'t add an already friend', () => {
-    return request.put('/api/profile/friends/')
+    return request.put('/api/profile/friends')
       .set('Authorization', token)
       .send({email: 'dany@dragons.com'})
-      .then(({ body }) => {
-        assert.equal(body, 'Cannot add yourself, or someone who is already a friend.');
+      .then(response => {
+        assert.equal(response.status, 403);
+        assert.include(response.body.error,  'already');
       });
   });
 
@@ -186,8 +174,8 @@ describe.only('User API', () => {
     return request.get('/api/profile/friends')
       .set('Authorization', token)
       .then(({ body }) => {
-        assert.equal(body[0].length, 1);
-        assert.equal(body.length, 2);
+        assert.ok(body.friends);
+        assert.ok(body.pendingFriends);
       });
   });
 
@@ -196,15 +184,16 @@ describe.only('User API', () => {
       .set('Authorization', token)
       .then(({ body }) => {
         assert.equal(body.firstName, 'Dany');
-        assert.equal(typeof {}, typeof body.shareables);
+        assert.ok(Array.isArray(body.shareables));
       });
   });
 
   it('Will not retrieve a profile if not friends', () => {
-    return request.get(`/api/profiles/friends/${sansaId}`)
+    return request.get(`/api/profile/friends/${sansaId}`)
       .set('Authorization', token)
-      .then(({ body }) => {
-        assert.deepEqual({}, body);
+      .then(response => {
+        assert.equal(response.status, 403);
+        assert.include(response.body.error,  'Not');
       });
   });
 
@@ -241,7 +230,7 @@ describe.only('User API', () => {
       .set('Authorization', token)
       .then(({ body }) => {
         assert.equal(body.length, 1);
-        assert.equal(body[0].priority, 2);
+        assert.equal(body[0].ownerId, danyId);
       });
   });
 
@@ -249,7 +238,12 @@ describe.only('User API', () => {
     return request.delete(`/api/profile/shareables/${shareableMeet._id}`)
       .set('Authorization', token)
       .then(({ body }) => {
-        assert.equal(body.shareables.length, 0);
+        assert.ok(body.deleted);
+        return request.get('/api/profile/shareables')
+          .set('Authorization', token);
+      })
+      .then(({ body }) => {
+        assert.deepEqual(body, []);
       });
   });
 
@@ -258,10 +252,10 @@ describe.only('User API', () => {
       .set('Authorization', token)
       .then(() => {
         return request.get('/api/profile')
-          .set('Authorization', token)
-          .then(({ body }) => {
-            assert.equal(body.friends.length, 0);
-          });
+          .set('Authorization', token);
+      })
+      .then(({ body }) => {
+        assert.equal(body.friends.length, 0);
       });
   });
 
@@ -270,10 +264,10 @@ describe.only('User API', () => {
       .set('Authorization', token)
       .then(() => {
         return request.get('/api/profile')
-          .set('Authorization', token)
-          .then(({ body }) => {
-            assert.notExists(body);
-          });
+          .set('Authorization', token);
+      })
+      .then(({ body }) => {
+        assert.notExists(body);
       });
   });
 });

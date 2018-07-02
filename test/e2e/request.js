@@ -1,3 +1,4 @@
+require('dotenv').config({ path: './test/e2e/.env' });
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 chai.use(chaiHttp);
